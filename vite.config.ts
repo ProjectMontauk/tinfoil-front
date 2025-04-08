@@ -27,7 +27,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://tinfoil-backend.onrender.com",
+        target: "postgresql://trevorgillan@localhost:5432/my_database",
         changeOrigin: true,
         secure: false,
         ws: true,

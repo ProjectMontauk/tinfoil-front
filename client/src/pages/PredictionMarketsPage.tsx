@@ -6,6 +6,10 @@ import { Button } from "@/components/ui/button";
 import type { Market } from "@db/schema";
 import { useState } from "react";
 
+const formatNumber = (num: number) => {
+  return `$${new Intl.NumberFormat('en-US').format(num)}`;
+};
+
 export default function PredictionMarketsPage() {
 
   console.log(`before query`);
@@ -81,7 +85,7 @@ export default function PredictionMarketsPage() {
                           </span>
                           <span className="mx-1">|</span>
                           <span className="text-sm text-muted-foreground">
-                            Market Size: ${Math.floor(Number(market.yesAmount) + Number(market.noAmount))}
+                            Market Size: {formatNumber(Math.floor(Number(market.yesAmount) + Number(market.noAmount)))}
                           </span>
                         </div>
                       </div>

@@ -2,8 +2,24 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Plus } from "lucide-react";
 import { Link } from "wouter";
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 
 export default function HomePage() {
+  const queryClient = useQueryClient();
+  
+  useEffect(() => {
+    // Prefetch markets data when homepage mounts
+    queryClient.prefetchQuery({
+      queryKey: ['markets'],
+      queryFn: async () => {
+        const response = await fetch('/api/markets');
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+      }
+    });
+  }, []); // Empty dependency array means this runs once when component mounts
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm">

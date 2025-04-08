@@ -27,6 +27,11 @@ function getDomainFromUrl(url: string): string | null {
   }
 }
 
+// Add this near the top with other helper functions
+const formatNumber = (num: number) => {
+  return `$${new Intl.NumberFormat('en-US').format(num)}`;
+};
+
 type EvidenceFormData = {
   title: string;
   content: string;
@@ -177,21 +182,34 @@ export default function PredictionPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <div>
-                    <Label className="text-lg">Bet Amount ($)</Label>
-                    <Input
-                      type="number"
-                      value={betAmount === 0 ? '' : betAmount}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        const numValue = value ? parseInt(value.replace(/^0+/, '')) : 0;
-                        setBetAmount(numValue);
-                      }}
-                      min={1}
-                      max={100}
-                      className="my-4"
-                      placeholder="Enter bet amount"
-                    />
+                  <div className="flex gap-8">
+                    <div>
+                      <Label className="text-lg">Bet Amount ($)</Label>
+                      <Input
+                        type="number"
+                        value={betAmount === 0 ? '' : betAmount}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const numValue = value ? parseInt(value.replace(/^0+/, '')) : 0;
+                          setBetAmount(numValue);
+                        }}
+                        min={1}
+                        max={100}
+                        className="my-4 w-[200px]"
+                        placeholder="Enter bet amount"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-lg">| To Win ($)</Label>
+                      <div className="flex gap-4 mt-[20px]">
+                        <div className="text-green-600">
+                          Yes: {formatNumber(Math.floor(betAmount + (betAmount / Number(market.currentOdds) - betAmount)))}
+                        </div>
+                        <div className="text-red-600">
+                          No: {formatNumber(Math.floor(betAmount + (betAmount / (1 - Number(market.currentOdds)) - betAmount)))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <Button
@@ -214,7 +232,7 @@ export default function PredictionPage() {
                 </div>
 
                 <div className="text-sm text-muted-foreground">
-                  <p>Market Size: ${(Number(market.yesAmount) + Number(market.noAmount)).toFixed(0)}</p>
+                  <p>Market Size: {formatNumber(Number(market.yesAmount) + Number(market.noAmount))}</p>
                   <p>Total Predictions: {predictions.filter(p => p.marketId === marketId).length}</p>
                 </div>
 
