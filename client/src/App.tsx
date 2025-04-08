@@ -5,7 +5,6 @@ import PredictionPage from "./pages/PredictionPage";
 import PredictionMarketsPage from "./pages/PredictionMarketsPage";
 import CreateMarketPage from "./pages/CreateMarketPage";
 
-console.log('📱 Rendering App.tsx');
 
 function App() {
   return (

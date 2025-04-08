@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, ArrowRight, Home, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from '@tanstack/react-query';
+import { z } from "zod";
 
 type MarketFormData = {
   title: string;
@@ -29,6 +30,10 @@ const steps = [
     title: "Review & Submit",
     description: "Review market details before creation",
   },
+  {
+    title: "Market Created Successfully!",
+    description: "Your market has been submitted. Choose where you'd like to go next:",
+  }
 ];
 
 export default function CreateMarketPage() {
@@ -36,6 +41,8 @@ export default function CreateMarketPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createdMarketId, setCreatedMarketId] = useState<string | null>(null);
 
   const form = useForm<MarketFormData>({
     defaultValues: {
@@ -46,6 +53,24 @@ export default function CreateMarketPage() {
   });
 
   const nextStep = () => {
+    if (currentStep === 0 && !form.getValues("title")) {
+      toast({
+        title: "Required Field",
+        description: "Please enter a market question",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (currentStep === 1 && (!form.getValues("yesResolution") || !form.getValues("noResolution"))) {
+      toast({
+        title: "Required Fields",
+        description: "Please enter both resolution conditions",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (currentStep < steps.length - 1) {
       setCurrentStep(current => current + 1);
     }
@@ -66,7 +91,7 @@ export default function CreateMarketPage() {
             <Label htmlFor="title">Market Question</Label>
             <Input
               id="title"
-              placeholder="Will X happen by Y date?"
+              placeholder="Was Atlantis a real place?"
               {...form.register("title", { required: true })}
             />
           </div>
@@ -95,23 +120,56 @@ export default function CreateMarketPage() {
       case 2:
         return (
           <div className="space-y-6">
-            <div className="rounded-lg border p-4">
+            <div>
               <h3 className="font-semibold mb-2">Market Question</h3>
-              <p className="text-muted-foreground">{form.getValues("title")}</p>
+              <Input
+                id="title"
+                {...form.register("title", { required: true })}
+                className="mt-2"
+              />
             </div>
-            <div className="rounded-lg border p-4">
+            <div>
               <h3 className="font-semibold mb-2">Resolution Conditions</h3>
               <div className="space-y-4">
                 <div>
                   <p className="font-medium text-sm">Yes Resolution:</p>
-                  <p className="text-muted-foreground">{form.getValues("yesResolution")}</p>
+                  <Textarea
+                    id="yesResolution"
+                    {...form.register("yesResolution", { required: true })}
+                    className="mt-2"
+                  />
                 </div>
                 <div>
                   <p className="font-medium text-sm">No Resolution:</p>
-                  <p className="text-muted-foreground">{form.getValues("noResolution")}</p>
+                  <Textarea
+                    id="noResolution"
+                    {...form.register("noResolution", { required: true })}
+                    className="mt-2"
+                  />
                 </div>
               </div>
             </div>
+          </div>
+        );
+      case 3:
+        return (
+          <div className="space-y-6">
+            
+            <Link 
+              href={`/predict/${createdMarketId}`}
+              className="block p-6 border rounded-lg hover:bg-accent transition-colors"
+            >
+              <h2 className="text-xl font-semibold mb-2">View your market and start posting evidence</h2>
+              <p className="text-muted-foreground">Go directly to your market page to start participating</p>
+            </Link>
+
+            <Link 
+              href="/markets"
+              className="block p-6 border rounded-lg hover:bg-accent transition-colors"
+            >
+              <h2 className="text-xl font-semibold mb-2">View all active markets</h2>
+              <p className="text-muted-foreground">See your market listed among other active markets</p>
+            </Link>
           </div>
         );
       default:
@@ -119,23 +177,21 @@ export default function CreateMarketPage() {
     }
   };
 
+  // Separate form submission from navigation
   const onSubmit = async (data: MarketFormData) => {
     try {
-      const response = await fetch('/api/markets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      setIsSubmitting(true);
+      const response = await fetch("/api/markets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
-      const newMarket = await response.json();
-      queryClient.invalidateQueries({ queryKey: ['markets'] });
+      if (!response.ok) throw new Error("Failed to create market");
       
-      toast({
-        title: "Success",
-        description: "Market created successfully",
-      });
-
-      navigate('/markets');
+      const result = await response.json();
+      setCreatedMarketId(result.id);
+      setCurrentStep(3); // Move to success step
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -143,6 +199,8 @@ export default function CreateMarketPage() {
         description: "Failed to create market",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -177,32 +235,56 @@ export default function CreateMarketPage() {
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader>
-              <CardTitle>{steps[currentStep].title}</CardTitle>
-              <p className="text-sm text-muted-foreground">{steps[currentStep].description}</p>
+              <CardTitle className={currentStep === 3 ? 'text-green-600' : ''}>
+                {steps[currentStep].title}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {steps[currentStep].description}
+              </p>
             </CardHeader>
             <CardContent>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                {renderStepContent()}
-
-                <div className="flex justify-between mt-6">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={prevStep}
-                    disabled={currentStep === 0}
-                  >
-                    Back
-                  </Button>
-                  
-                  {currentStep === steps.length - 1 ? (
-                    <Button type="submit">Create Market</Button>
-                  ) : (
-                    <Button type="button" onClick={nextStep}>
-                      Next
+              {currentStep === 2 ? (
+                // Review step: separate form for submission
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  {renderStepContent()}
+                  <div className="flex justify-between mt-6">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={prevStep}
+                    >
+                      Back
                     </Button>
+                    <Button 
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      {isSubmitting ? "Creating..." : "Create Market"}
+                    </Button>
+                  </div>
+                </form>
+              ) : (
+                // Navigation steps
+                <div className="space-y-4">
+                  {renderStepContent()}
+                  {currentStep < 3 && (
+                    <div className="flex justify-between mt-6">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={prevStep}
+                        disabled={currentStep === 0}
+                      >
+                        Back
+                      </Button>
+                      <Button type="button" onClick={nextStep}>
+                        Next
+                      </Button>
+                    </div>
                   )}
                 </div>
-              </form>
+              )}
             </CardContent>
           </Card>
         </div>

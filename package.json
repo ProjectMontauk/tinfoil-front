@@ -4,7 +4,7 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev": "npm run dev:client",
     "dev:client": "vite",
     "dev:server": "tsx watch api/index.ts",
     "build": "vite build",
