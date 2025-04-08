@@ -153,7 +153,7 @@ export default function CreateMarketPage() {
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-2xl font-bold text-primary">Tinfoil</h2>
-              <p className="text-sm text-muted-foreground">Question it All</p>
+              <p className="text-sm text-muted-foreground">Time Discovers Truth</p>
             </div>
             <div className="flex gap-2">
               <Link href="/">

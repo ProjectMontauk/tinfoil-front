@@ -11,7 +11,7 @@ export default function HomePage() {
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-2xl font-bold text-primary">Tinfoil</h2>
-              <p className="text-sm text-muted-foreground">Question it All</p>
+              <p className="text-sm text-muted-foreground">Time Discovers Truth</p>
             </div>
             <Link href="/markets/create">
               <Button>
