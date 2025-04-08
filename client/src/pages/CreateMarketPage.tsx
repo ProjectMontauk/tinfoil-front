@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation, Link } from "wouter";
@@ -35,6 +36,27 @@ const steps = [
     description: "Your market has been submitted. Choose where you'd like to go next:",
   }
 ];
+
+const RefreshingLink = ({ href, children, className }: { href: string; children: React.ReactNode; className: string }) => {
+  const [, navigate] = useLocation();
+  const queryClient = useQueryClient();
+
+  const handleClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    // Wait for the refetch to complete before navigating
+    await queryClient.refetchQueries({ 
+      queryKey: ['markets'],
+      type: 'active'
+    });
+    navigate(href);
+  };
+
+  return (
+    <a href={href} onClick={handleClick} className={className}>
+      {children}
+    </a>
+  );
+};
 
 export default function CreateMarketPage() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -154,7 +176,6 @@ export default function CreateMarketPage() {
       case 3:
         return (
           <div className="space-y-6">
-            
             <Link 
               href={`/predict/${createdMarketId}`}
               className="block p-6 border rounded-lg hover:bg-accent transition-colors"
@@ -163,13 +184,13 @@ export default function CreateMarketPage() {
               <p className="text-muted-foreground">Go directly to your market page to start participating</p>
             </Link>
 
-            <Link 
+            <RefreshingLink 
               href="/markets"
               className="block p-6 border rounded-lg hover:bg-accent transition-colors"
             >
               <h2 className="text-xl font-semibold mb-2">View all active markets</h2>
               <p className="text-muted-foreground">See your market listed among other active markets</p>
-            </Link>
+            </RefreshingLink>
           </div>
         );
       default:
@@ -191,7 +212,12 @@ export default function CreateMarketPage() {
       
       const result = await response.json();
       setCreatedMarketId(result.id);
-      setCurrentStep(3); // Move to success step
+      // Force an immediate refetch of markets data
+      await queryClient.refetchQueries({ 
+        queryKey: ['markets'],
+        type: 'active'
+      });
+      setCurrentStep(3);
     } catch (error) {
       console.error('Error:', error);
       toast({
