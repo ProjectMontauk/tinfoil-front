@@ -43,12 +43,23 @@ const RefreshingLink = ({ href, children, className }: { href: string; children:
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
-    // Wait for the refetch to complete before navigating
-    await queryClient.refetchQueries({ 
-      queryKey: ['markets'],
-      type: 'active'
-    });
-    navigate(href);
+    try {
+      // First invalidate the query
+      await queryClient.invalidateQueries({ queryKey: ['/api/markets'] });
+      
+      // Then force an immediate refetch and wait for it
+      await queryClient.fetchQuery({ 
+        queryKey: ['/api/markets'],
+        queryFn: () => fetch('/api/markets').then(res => res.json())
+      });
+
+      // Only navigate after the fetch is complete
+      navigate(href);
+    } catch (error) {
+      console.error('Failed to refresh markets:', error);
+      // Navigate anyway if refresh fails
+      navigate(href);
+    }
   };
 
   return (
@@ -215,7 +226,8 @@ export default function CreateMarketPage() {
       // Force an immediate refetch of markets data
       await queryClient.refetchQueries({ 
         queryKey: ['markets'],
-        type: 'active'
+        type: 'active',
+        exact: true
       });
       setCurrentStep(3);
     } catch (error) {
