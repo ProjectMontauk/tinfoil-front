@@ -5,6 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import type { Market } from "@db/schema";
 import { useState } from "react";
+import { ConnectButton } from "thirdweb/react";
+import { client } from "../lib/client";
 
 const formatNumber = (num: number) => {
   return `$${new Intl.NumberFormat('en-US').format(num)}`;
@@ -47,12 +49,13 @@ export default function PredictionMarketsPage() {
                   Home
                 </Button>
               </Link>
-              <Link href="/markets/create">
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Market
-                </Button>
-              </Link>
+              <ConnectButton 
+                client={client} 
+                connectButton={{
+                  label: "Connect Wallet",
+                  className: "!bg-primary !text-white hover:!bg-primary/90 !px-4 !py-1.5 !rounded-md !font-medium !h-10"
+                }}
+              />
             </div>
           </div>
         </div>

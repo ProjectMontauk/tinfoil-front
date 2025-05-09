@@ -16,6 +16,8 @@ import type { Market } from "@db/schema";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useParams } from 'wouter';
 import { OddsChart } from "@/components/OddsChart";
+import { ConnectButton } from "thirdweb/react";
+import { client } from "../lib/client";
 
 // Helper function to extract domain from URL
 function getDomainFromUrl(url: string): string | null {
@@ -157,12 +159,13 @@ export default function PredictionPage() {
                   Home
                 </Button>
               </Link>
-              <Link href="/markets/create">
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Market
-                </Button>
-              </Link>
+              <ConnectButton 
+                client={client} 
+                connectButton={{
+                  label: "Connect Wallet",
+                  className: "!bg-primary !text-white hover:!bg-primary/90 !px-4 !py-1.5 !rounded-md !font-medium !h-10"
+                }}
+              />
             </div>
           </div>
         </div>

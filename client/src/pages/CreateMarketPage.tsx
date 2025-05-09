@@ -11,6 +11,8 @@ import { ArrowLeft, ArrowRight, Home, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { z } from "zod";
+import { ConnectButton } from "thirdweb/react";
+import { client } from "../lib/client";
 
 type MarketFormData = {
   title: string;
@@ -258,12 +260,13 @@ export default function CreateMarketPage() {
                   Home
                 </Button>
               </Link>
-              <Link href="/markets/create">
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Market
-                </Button>
-              </Link>
+              <ConnectButton 
+                client={client} 
+                connectButton={{
+                  label: "Connect Wallet",
+                  className: "!bg-primary !text-white hover:!bg-primary/90 !px-4 !py-1.5 !rounded-md !font-medium !h-10"
+                }}
+              />
             </div>
           </div>
         </div>

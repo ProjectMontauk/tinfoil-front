@@ -1,9 +1,12 @@
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Plus } from "lucide-react";
 import { Link } from "wouter";
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
+import { ConnectButton } from "thirdweb/react";
+import { client } from "../lib/client";
 
 export default function HomePage() {
   const queryClient = useQueryClient();
@@ -29,12 +32,15 @@ export default function HomePage() {
               <h2 className="text-2xl font-bold text-primary">Tinfoil</h2>
               <p className="text-sm text-muted-foreground">Time Discovers Truth</p>
             </div>
-            <Link href="/markets/create">
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Market
-              </Button>
-            </Link>
+            <div className="flex items-center gap-4">
+              <ConnectButton 
+                client={client} 
+                connectButton={{
+                  label: "Connect Wallet",
+                  className: "!bg-primary !text-white hover:!bg-primary/90 !px-4 !py-1.5 !rounded-md !font-medium !h-10"
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>
